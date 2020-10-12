@@ -13,13 +13,12 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DataPointService(private val dataPointRepository: DataPointRepository) {
     fun addDataPoint(dataPoint: DataPoint) {
-        val dataPoints = dataPointRepository.dataPoints
-        if (dataPoints.contains(dataPoint)) {
+        if (dataPointRepository.containsDataPoint(dataPoint)) {
             logger.warn { "Insert duplicate datapoint" }
             throw DuplicateDataPointException("Record is in database! user: ${dataPoint.user} device: ${dataPoint.device}")
         }
         logger.info { "Datapoint was saved" }
-        dataPoints.add(dataPoint)
+        dataPointRepository.addDataPoint(dataPoint)
     }
 
     fun deleteAllDeviceDataPoints(device: String) {
