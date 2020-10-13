@@ -22,7 +22,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
 
     fun deviceAverageTime(device: String): List<AverageResponse> {
         val dataPoints = dataPointRepository.findByDevice(device)
-        if(CollectionUtils.isEmpty(dataPoints)){
+        if(dataPoints.isEmpty()){
             logger.warn { "DataPoints with device $device not found" }
             throw NotFoundException("Device $device not found!!!")
         }
@@ -31,7 +31,6 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     }
 
     fun deviceMovingAverageTime(type: DataType, device: String, windowSize: Int): List<MovingAverageResponse> {
-
         val deviceAverageTime = findDataByTypeAndName(type, device)
 
         if(windowSize > deviceAverageTime.size -1){
@@ -60,7 +59,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
 
     fun userAverageTime(user: String): List<AverageResponse> {
         val dataPoints = dataPointRepository.findByUser(user)
-        if(CollectionUtils.isEmpty(dataPoints)){
+        if(dataPoints.isEmpty()){
             logger.warn { "DataPoints with user $user not found" }
             throw NotFoundException("Device $user not found!!!")
         }

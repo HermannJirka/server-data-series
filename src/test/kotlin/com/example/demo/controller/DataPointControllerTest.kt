@@ -89,4 +89,20 @@ internal class DataPointControllerTest {
         mockMvc.perform(delete("/users/user1/datapoints"))
                 .andExpect(status().isNotFound)
     }
+
+    @Test
+    fun addDuplicateDataEndpoint(){
+        mockMvc.perform(post("/datapoints")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(DataPoint(16,"device1","user1", LocalDateTime.parse("2012-10-13T19:19:19")))))
+                .andExpect(status().isCreated)
+
+        mockMvc.perform(post("/datapoints")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(mapper.writeValueAsString(DataPoint(16,"device1","user1", LocalDateTime.parse("2012-10-13T19:19:19")))))
+                .andExpect(status().isBadRequest)
+    }
+
 }
