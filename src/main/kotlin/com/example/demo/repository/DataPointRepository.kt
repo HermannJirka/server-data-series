@@ -33,8 +33,4 @@ class DataPointRepository {
     fun removeAll(deleteDataPoints: List<DataPoint>) {
         dataPoints.removeAll(deleteDataPoints)
     }
-
-    fun findAll(): TreeSet<DataPoint> {
-        return dataPoints
-    }
 }

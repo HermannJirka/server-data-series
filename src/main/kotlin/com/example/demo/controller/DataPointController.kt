@@ -29,6 +29,6 @@ class DataPointController(private val dataPointService: DataPointService) {
     @GetMapping("/devices/{device}/datapoints")
     fun getAllDeviceDataPoints(@PathVariable("device") device: String) = dataPointService.getAllDeviceByName(device, DEVICE)
 
-    @GetMapping("/devices/{user}/datapoints")
+    @GetMapping("/users/{user}/datapoints")
     fun getAllUserDataPoints(@PathVariable("user") user: String) = dataPointService.getAllDeviceByName(user, USER)
 }

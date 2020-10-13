@@ -16,8 +16,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -58,7 +57,10 @@ internal class DataPointControllerTest {
                 .andExpect(status().isCreated);
 
         mockMvc.perform(delete("/users/user1/datapoints"))
-                .andExpect(status().isOk);
+                .andExpect(status().isOk)
+
+        mockMvc.perform(get("/devices/device1/datapoints"))
+                .andExpect(status().isNotFound)
     }
 
     @Test
@@ -70,18 +72,21 @@ internal class DataPointControllerTest {
                 .andExpect(status().isCreated);
 
         mockMvc.perform(delete("/devices/device1/datapoints"))
-                .andExpect(status().isOk);
+                .andExpect(status().isOk)
+
+        mockMvc.perform(get("/users/user1/datapoints"))
+                .andExpect(status().isNotFound)
     }
 
     @Test
     fun deleteAllDeviceDataPointsUserNotFound() {
-        mockMvc.perform(delete("/users/user1/datapoints"))
-                .andExpect(status().isNotFound);
+        mockMvc.perform(delete("/devices/device1/datapoints"))
+                .andExpect(status().isNotFound)
     }
 
     @Test
     fun deleteAllUserDataPointsDeviceNotFound() {
-        mockMvc.perform(delete("/devices/device1/datapoints"))
-                .andExpect(status().isNotFound);
+        mockMvc.perform(delete("/users/user1/datapoints"))
+                .andExpect(status().isNotFound)
     }
 }
