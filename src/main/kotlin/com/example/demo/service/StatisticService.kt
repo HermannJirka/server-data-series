@@ -2,6 +2,7 @@ package com.example.demo.service
 
 import com.example.demo.model.AverageResponse
 import com.example.demo.model.DataPoint
+import com.example.demo.model.DataType
 import com.example.demo.model.MovingAverageResponse
 import com.example.demo.repository.DataPointRepository
 import mu.KotlinLogging
@@ -10,33 +11,28 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
-import java.util.function.Consumer
-import java.util.stream.Collectors
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 class StatisticService(private val dataPointRepository: DataPointRepository) {
-    enum class DataType {
-        DEVICE, USER
-    }
 
     fun deviceAverageTime(device: String): List<AverageResponse> {
-        val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.deviceAverageTime(device))
-        return convertDataPointsToMap.entries.stream().map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.collect(Collectors.toList())
+        val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.findByDevice(device))
+        return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }
 
     fun deviceMovingAverageTime(type: DataType, device: String, windowSize: Int): ArrayList<MovingAverageResponse> {
         val deviceAverageTime = findDataByTypeAndName(type, device)
 
         val deviceMovingTime = arrayListOf<MovingAverageResponse>()
-        for (i in 0..deviceAverageTime.size) {
-            if ((i + windowSize) <= deviceAverageTime.size) {
+        for (i in deviceAverageTime.indices) {
+            if ((i + (windowSize-1)) <= (deviceAverageTime.size - 1)) {
                 var count: BigDecimal = BigDecimal.ZERO
-                for (j in i..(i + windowSize)) {
-                    count += deviceAverageTime.get(j).average
+                for (j in i until i + windowSize) {
+                    count += deviceAverageTime[j].average
                 }
-                deviceMovingTime.add(MovingAverageResponse(deviceAverageTime.get(i).bucketStart, deviceAverageTime.get(i + windowSize).bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
+                deviceMovingTime.add(MovingAverageResponse(deviceAverageTime[i].bucketStart, deviceAverageTime[i +  (windowSize-1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
             }
         }
         return deviceMovingTime
@@ -50,41 +46,40 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     }
 
     fun userAverageTime(user: String): List<AverageResponse> {
-        val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.userAverageTime(user))
-        return convertDataPointsToMap.entries.stream().map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.collect(Collectors.toList())
+        val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.findByUser(user))
+        return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }
 
     fun userMovingAverageTime(type: DataType, user: String, windowSize: Int): ArrayList<MovingAverageResponse> {
         val userAverageTime = findDataByTypeAndName(type, user)
         val userMovingTime = arrayListOf<MovingAverageResponse>()
-        for (i in 0..userAverageTime.size) {
-            if ((i + windowSize) <= userAverageTime.size) {
+        for (i in userAverageTime.indices) {
+            if ((i + (windowSize-1)) <= (userAverageTime.size - 1)) {
                 var count: BigDecimal = BigDecimal.ZERO
-                for (j in i..(i + windowSize)) {
-                    count += userAverageTime.get(j).average
+                for (j in i until i + windowSize) {
+                    count += userAverageTime[j].average
                 }
-                userMovingTime.add(MovingAverageResponse(userAverageTime.get(i).bucketStart, userAverageTime.get(i + windowSize).bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
+                userMovingTime.add(MovingAverageResponse(userAverageTime[i].bucketStart, userAverageTime[i +  (windowSize-1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
             }
         }
         return userMovingTime
     }
 
     private fun convertDataPointsToMap(datapoints: List<DataPoint>): TreeMap<Long, ArrayList<DataPoint>> {
-        var deviceMap: TreeMap<Long, ArrayList<DataPoint>> = TreeMap()
+        val deviceMap: TreeMap<Long, ArrayList<DataPoint>> = TreeMap()
 
         var lastTimeStampMinutes = (datapoints.first().timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
-        var currentTimeStampMinutes = (LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
+        val currentTimeStampMinutes = (LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
 
         while (lastTimeStampMinutes <= currentTimeStampMinutes) {
-            logger.debug { lastTimeStampMinutes }
-            deviceMap.put(lastTimeStampMinutes, arrayListOf())
+            deviceMap[lastTimeStampMinutes] = arrayListOf()
             lastTimeStampMinutes += 1
         }
 
         for (dataPoint in datapoints) {
-            var bucket: Long = (dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
+            val bucket: Long = (dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
             if (deviceMap.containsKey(bucket)) {
-                var bucketDataPoints = deviceMap.get(bucket)
+                val bucketDataPoints = deviceMap[bucket]
                 bucketDataPoints?.add(dataPoint)
             }
         }
@@ -92,10 +87,9 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     }
 
     private fun computeAverageTime(bucket: Long, dataPoints: ArrayList<DataPoint>): AverageResponse {
-        var sumValue: Double = 0.0
-        dataPoints.forEach(Consumer { dp -> sumValue += dp.value })
-        var bucketStart = bucket * 15
-        var bucketEnd = ((bucket + 1) * 15) - 1
-        return AverageResponse(bucketStart, bucketEnd, BigDecimal(sumValue))
+        val sum = dataPoints.map(DataPoint::value).average()
+        val bucketStart = bucket * 15
+        val bucketEnd = ((bucket + 1) * 15) - 1
+        return AverageResponse(bucketStart, bucketEnd, BigDecimal(sum))
     }
 }

@@ -8,14 +8,18 @@ import java.util.*
 @Service
 class DataPointRepository {
 
-    var dataPoints = TreeSet<DataPoint> { o1, o2 -> o1.timestamp.compareTo(o2.timestamp) }
+    private var dataPoints = TreeSet<DataPoint> { o1, o2 ->
+        Comparator.comparing(DataPoint::timestamp)
+                .thenComparing(DataPoint::device)
+                .thenComparing(DataPoint::user)
+                .compare(o1, o2) }
 
-    fun deviceAverageTime(device: String): List<DataPoint> {
+    fun findByDevice(device: String): List<DataPoint> {
         return dataPoints.filter { dataSeries -> device == dataSeries.device }.sortedBy { dataPoint -> dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.toList()
     }
 
-    fun userAverageTime(user: String): List<DataPoint> {
-        return dataPoints.filter { dataSeries -> user == dataSeries.device }.sortedBy { dataPoint -> dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.toList()
+    fun findByUser(user: String): List<DataPoint> {
+        return dataPoints.filter { dataSeries -> user == dataSeries.user }.sortedBy { dataPoint -> dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.toList()
     }
 
     fun containsDataPoint(dataPoint: DataPoint): Boolean {
@@ -24,5 +28,9 @@ class DataPointRepository {
 
     fun addDataPoint(dataPoint: DataPoint) {
         dataPoints.add(dataPoint)
+    }
+
+    fun removeAll(deleteDataPoints: List<DataPoint>) {
+        dataPoints.removeAll(deleteDataPoints)
     }
 }
