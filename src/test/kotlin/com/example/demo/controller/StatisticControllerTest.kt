@@ -62,7 +62,7 @@ internal class StatisticControllerTest {
 
         val avgDataPoints: List<AverageResponse> = mapper.readValue(contentAsString)
         assertEquals(9, avgDataPoints.size)
-        avgDataPoints.forEach { t ->  assertEquals(3,t.average.toInt()) }
+        avgDataPoints.forEach { t -> assertEquals(3, t.average.toInt()) }
     }
 
     @Test
@@ -74,7 +74,7 @@ internal class StatisticControllerTest {
 
         val avgDataPoints: List<AverageResponse> = mapper.readValue(contentAsString)
         assertEquals(7, avgDataPoints.size)
-        avgDataPoints.forEach { t ->  assertEquals(3,t.average.toInt()) }
+        avgDataPoints.forEach { t -> assertEquals(3, t.average.toInt()) }
     }
 
     @Test
@@ -85,7 +85,7 @@ internal class StatisticControllerTest {
 
         val avgDataPoints: List<AverageResponse> = mapper.readValue(contentAsString)
         assertEquals(9, avgDataPoints.size)
-        avgDataPoints.forEach { t ->  assertEquals(5,t.average.toInt()) }
+        avgDataPoints.forEach { t -> assertEquals(5, t.average.toInt()) }
     }
 
     @Test
@@ -97,6 +97,32 @@ internal class StatisticControllerTest {
 
         val avgDataPoints: List<AverageResponse> = mapper.readValue(contentAsString)
         assertEquals(8, avgDataPoints.size)
-        avgDataPoints.forEach { t ->  assertEquals(5,t.average.toInt()) }
+        avgDataPoints.forEach { t -> assertEquals(5, t.average.toInt()) }
+    }
+
+    @Test
+    fun notFoundUserForUserMovingAverageTime() {
+        mockMvc.perform(get("/statistics/users/user3/moving_avg")
+                .param("window_size", "2"))
+                .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun notFoundDeviceForDeviceMovingAverageTime() {
+        mockMvc.perform(get("/statistics/devices/device3/moving_avg")
+                .param("window_size", "2"))
+                .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun notFoundDeviceForDeviceAverageTime() {
+        mockMvc.perform(get("/statistics/devices/device3/avg"))
+                .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun notFoundUserForUserAverageTime() {
+        mockMvc.perform(get("/statistics/users/user3/avg"))
+                .andExpect(status().isNotFound)
     }
 }

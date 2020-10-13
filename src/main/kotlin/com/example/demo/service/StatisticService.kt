@@ -1,5 +1,6 @@
 package com.example.demo.service
 
+import com.example.demo.exception.NotFoundException
 import com.example.demo.model.AverageResponse
 import com.example.demo.model.DataPoint
 import com.example.demo.model.DataType
@@ -7,6 +8,7 @@ import com.example.demo.model.MovingAverageResponse
 import com.example.demo.repository.DataPointRepository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import org.springframework.util.CollectionUtils
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -18,7 +20,12 @@ private val logger = KotlinLogging.logger {}
 class StatisticService(private val dataPointRepository: DataPointRepository) {
 
     fun deviceAverageTime(device: String): List<AverageResponse> {
-        val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.findByDevice(device))
+        val dataPoints = dataPointRepository.findByDevice(device)
+        if(CollectionUtils.isEmpty(dataPoints)){
+            logger.warn { "DataPoints with device $device not found" }
+            throw NotFoundException("Device $device not found!!!")
+        }
+        val convertDataPointsToMap = convertDataPointsToMap(dataPoints)
         return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }
 
@@ -46,6 +53,11 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     }
 
     fun userAverageTime(user: String): List<AverageResponse> {
+        val dataPoints = dataPointRepository.findByUser(user)
+        if(CollectionUtils.isEmpty(dataPoints)){
+            logger.warn { "DataPoints with user $user not found" }
+            throw NotFoundException("Device $user not found!!!")
+        }
         val convertDataPointsToMap = convertDataPointsToMap(dataPointRepository.findByUser(user))
         return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }

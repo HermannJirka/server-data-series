@@ -15,11 +15,11 @@ class DataPointRepository {
                 .compare(o1, o2) }
 
     fun findByDevice(device: String): List<DataPoint> {
-        return dataPoints.filter { dataSeries -> device == dataSeries.device }.sortedBy { dataPoint -> dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.toList()
+        return dataPoints.filter { dataSeries -> device == dataSeries.device }.sortedBy { dataPoint -> dataPoint.timestamp }.toList()
     }
 
     fun findByUser(user: String): List<DataPoint> {
-        return dataPoints.filter { dataSeries -> user == dataSeries.user }.sortedBy { dataPoint -> dataPoint.timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() }.toList()
+        return dataPoints.filter { dataSeries -> user == dataSeries.user }.sortedBy { dataPoint -> dataPoint.timestamp}.toList()
     }
 
     fun containsDataPoint(dataPoint: DataPoint): Boolean {
@@ -32,5 +32,9 @@ class DataPointRepository {
 
     fun removeAll(deleteDataPoints: List<DataPoint>) {
         dataPoints.removeAll(deleteDataPoints)
+    }
+
+    fun findAll(): TreeSet<DataPoint> {
+        return dataPoints
     }
 }
