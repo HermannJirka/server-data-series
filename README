@@ -1,1 +1,14 @@
 #Server DataPoint
+## I worked out the project according to the assignment
+### Statistics endpoints
+Average - Buckets are formed after 15 minutes, if bucket have not any records average the value is zero
+But there is some options:
+1. insert a null value instead of a zero
+2. bring up this bucket
+
+Moving average is calculated from the average values, if bucket have not any records average the value is zero
+But there is some options:
+1. insert a null value instead of a zero
+2. bring up this bucket
+
+These options depend on the assignment of the rest api
