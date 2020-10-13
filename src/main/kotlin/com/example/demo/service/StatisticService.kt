@@ -9,7 +9,6 @@ import com.example.demo.model.MovingAverageResponse
 import com.example.demo.repository.DataPointRepository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import org.springframework.util.CollectionUtils
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -22,7 +21,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
 
     fun deviceAverageTime(device: String): List<AverageResponse> {
         val dataPoints = dataPointRepository.findByDevice(device)
-        if(dataPoints.isEmpty()){
+        if (dataPoints.isEmpty()) {
             logger.warn { "DataPoints with device $device not found" }
             throw NotFoundException("Device $device not found!!!")
         }
@@ -33,18 +32,18 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     fun deviceMovingAverageTime(type: DataType, device: String, windowSize: Int): List<MovingAverageResponse> {
         val deviceAverageTime = findDataByTypeAndName(type, device)
 
-        if(windowSize > deviceAverageTime.size -1){
+        if (windowSize > deviceAverageTime.size - 1) {
             throw WindowSizeOutOfBoundException("Windows size $windowSize is bigger then size of array")
         }
 
         val deviceMovingTime = arrayListOf<MovingAverageResponse>()
         for (i in deviceAverageTime.indices) {
-            if ((i + (windowSize-1)) <= (deviceAverageTime.size - 1)) {
+            if ((i + (windowSize - 1)) <= (deviceAverageTime.size - 1)) {
                 var count: BigDecimal = BigDecimal.ZERO
                 for (j in i until i + windowSize) {
                     count += deviceAverageTime[j].average
                 }
-                deviceMovingTime.add(MovingAverageResponse(deviceAverageTime[i].bucketStart, deviceAverageTime[i +  (windowSize-1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
+                deviceMovingTime.add(MovingAverageResponse(deviceAverageTime[i].bucketStart, deviceAverageTime[i + (windowSize - 1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
             }
         }
         return deviceMovingTime
@@ -59,7 +58,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
 
     fun userAverageTime(user: String): List<AverageResponse> {
         val dataPoints = dataPointRepository.findByUser(user)
-        if(dataPoints.isEmpty()){
+        if (dataPoints.isEmpty()) {
             logger.warn { "DataPoints with user $user not found" }
             throw NotFoundException("Device $user not found!!!")
         }
@@ -70,18 +69,18 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
     fun userMovingAverageTime(type: DataType, user: String, windowSize: Int): List<MovingAverageResponse> {
         val userAverageTime = findDataByTypeAndName(type, user)
 
-        if(windowSize > userAverageTime.size -1){
+        if (windowSize > userAverageTime.size - 1) {
             throw WindowSizeOutOfBoundException("Windows size $windowSize is bigger then size of array")
         }
 
         val userMovingTime = arrayListOf<MovingAverageResponse>()
         for (i in userAverageTime.indices) {
-            if ((i + (windowSize-1)) <= (userAverageTime.size - 1)) {
+            if ((i + (windowSize - 1)) <= (userAverageTime.size - 1)) {
                 var count: BigDecimal = BigDecimal.ZERO
                 for (j in i until i + windowSize) {
                     count += userAverageTime[j].average
                 }
-                userMovingTime.add(MovingAverageResponse(userAverageTime[i].bucketStart, userAverageTime[i +  (windowSize-1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
+                userMovingTime.add(MovingAverageResponse(userAverageTime[i].bucketStart, userAverageTime[i + (windowSize - 1)].bucketEnd, BigDecimal.valueOf(count.toDouble() / windowSize)))
             }
         }
         return userMovingTime
