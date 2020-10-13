@@ -1,6 +1,7 @@
 package com.example.demo.service
 
 import com.example.demo.exception.NotFoundException
+import com.example.demo.exception.WindowSizeOutOfBoundException
 import com.example.demo.model.AverageResponse
 import com.example.demo.model.DataPoint
 import com.example.demo.model.DataType
@@ -29,8 +30,13 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
         return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }
 
-    fun deviceMovingAverageTime(type: DataType, device: String, windowSize: Int): ArrayList<MovingAverageResponse> {
+    fun deviceMovingAverageTime(type: DataType, device: String, windowSize: Int): List<MovingAverageResponse> {
+
         val deviceAverageTime = findDataByTypeAndName(type, device)
+
+        if(windowSize > deviceAverageTime.size -1){
+            throw WindowSizeOutOfBoundException("Windows size $windowSize is bigger then size of array")
+        }
 
         val deviceMovingTime = arrayListOf<MovingAverageResponse>()
         for (i in deviceAverageTime.indices) {
@@ -62,8 +68,13 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
         return convertDataPointsToMap.entries.map { (bucket, dataPoints) -> computeAverageTime(bucket, dataPoints) }.toCollection(arrayListOf())
     }
 
-    fun userMovingAverageTime(type: DataType, user: String, windowSize: Int): ArrayList<MovingAverageResponse> {
+    fun userMovingAverageTime(type: DataType, user: String, windowSize: Int): List<MovingAverageResponse> {
         val userAverageTime = findDataByTypeAndName(type, user)
+
+        if(windowSize > userAverageTime.size -1){
+            throw WindowSizeOutOfBoundException("Windows size $windowSize is bigger then size of array")
+        }
+
         val userMovingTime = arrayListOf<MovingAverageResponse>()
         for (i in userAverageTime.indices) {
             if ((i + (windowSize-1)) <= (userAverageTime.size - 1)) {
@@ -77,7 +88,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
         return userMovingTime
     }
 
-    private fun convertDataPointsToMap(datapoints: List<DataPoint>): TreeMap<Long, ArrayList<DataPoint>> {
+    private fun convertDataPointsToMap(datapoints: List<DataPoint>): Map<Long, List<DataPoint>> {
         val deviceMap: TreeMap<Long, ArrayList<DataPoint>> = TreeMap()
 
         var lastTimeStampMinutes = (datapoints.first().timestamp.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() / 60000) / 15
@@ -98,7 +109,7 @@ class StatisticService(private val dataPointRepository: DataPointRepository) {
         return deviceMap
     }
 
-    private fun computeAverageTime(bucket: Long, dataPoints: ArrayList<DataPoint>): AverageResponse {
+    private fun computeAverageTime(bucket: Long, dataPoints: List<DataPoint>): AverageResponse {
         val sum = dataPoints.map(DataPoint::value).average()
         val bucketStart = bucket * 15
         val bucketEnd = ((bucket + 1) * 15) - 1

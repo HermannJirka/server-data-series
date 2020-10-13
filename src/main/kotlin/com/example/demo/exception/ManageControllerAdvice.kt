@@ -40,4 +40,12 @@ class ManageControllerAdvice {
         val errorResponse = ErrorResponse(e.message ?: "Duplicate record exception", "DUPLICATE_RECORD")
         return ResponseEntity(errorResponse, httpError);
     }
+
+    @ExceptionHandler(WindowSizeOutOfBoundException::class)
+    @ResponseBody
+    fun handleException(e: WindowSizeOutOfBoundException): ResponseEntity<ErrorResponse> {
+        val httpError = HttpStatus.BAD_REQUEST
+        val errorResponse = ErrorResponse(e.message ?: "Window size is out of bound", "WINDOW_SIZE_IS_OUT_OF_BOUND")
+        return ResponseEntity(errorResponse, httpError);
+    }
 }

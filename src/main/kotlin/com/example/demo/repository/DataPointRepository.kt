@@ -2,7 +2,6 @@ package com.example.demo.repository
 
 import com.example.demo.model.DataPoint
 import org.springframework.stereotype.Service
-import java.time.ZoneId
 import java.util.*
 
 @Service
@@ -12,14 +11,15 @@ class DataPointRepository {
         Comparator.comparing(DataPoint::timestamp)
                 .thenComparing(DataPoint::device)
                 .thenComparing(DataPoint::user)
-                .compare(o1, o2) }
+                .compare(o1, o2)
+    }
 
     fun findByDevice(device: String): List<DataPoint> {
         return dataPoints.filter { dataSeries -> device == dataSeries.device }.sortedBy { dataPoint -> dataPoint.timestamp }.toList()
     }
 
     fun findByUser(user: String): List<DataPoint> {
-        return dataPoints.filter { dataSeries -> user == dataSeries.user }.sortedBy { dataPoint -> dataPoint.timestamp}.toList()
+        return dataPoints.filter { dataSeries -> user == dataSeries.user }.sortedBy { dataPoint -> dataPoint.timestamp }.toList()
     }
 
     fun containsDataPoint(dataPoint: DataPoint): Boolean {

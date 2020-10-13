@@ -125,4 +125,18 @@ internal class StatisticControllerTest {
         mockMvc.perform(get("/statistics/users/user3/avg"))
                 .andExpect(status().isNotFound)
     }
+
+    @Test
+    fun windowSizeOutOfBoundForDeviceAverageTime() {
+        mockMvc.perform(get("/statistics/devices/device1/moving_avg")
+                .param("window_size", "11"))
+                .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun windowSizeOutOfBoundForUserAverageTime() {
+        mockMvc.perform(get("/statistics/users/user2/moving_avg")
+                .param("window_size", "11"))
+                .andExpect(status().isBadRequest)
+    }
 }

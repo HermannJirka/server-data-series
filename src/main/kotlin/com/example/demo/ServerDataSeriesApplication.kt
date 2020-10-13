@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class ServerDataSeriesApplication
 
 fun main(args: Array<String>) {
-	runApplication<ServerDataSeriesApplication>(*args)
+    runApplication<ServerDataSeriesApplication>(*args)
 }

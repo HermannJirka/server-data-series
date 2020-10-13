@@ -16,7 +16,7 @@ class StatisticController(private val statisticsService: StatisticService) {
 
 
     @GetMapping("/devices/{device}/moving_avg")
-    fun getDevicesMovingAverageTime(@PathVariable device: String, @RequestParam("window_size") windowSize: Int): ArrayList<MovingAverageResponse> = statisticsService.deviceMovingAverageTime(DEVICE, device, windowSize)
+    fun getDevicesMovingAverageTime(@PathVariable device: String, @RequestParam("window_size") windowSize: Int): List<MovingAverageResponse> = statisticsService.deviceMovingAverageTime(DEVICE, device, windowSize)
 
 
     @GetMapping("/users/{user}/avg")
@@ -24,5 +24,5 @@ class StatisticController(private val statisticsService: StatisticService) {
 
 
     @GetMapping("/users/{user}/moving_avg")
-    fun getUserMovingAverageTime(@PathVariable("user") user: String, @RequestParam("window_size") windowSize: Int): ArrayList<MovingAverageResponse> = statisticsService.userMovingAverageTime(USER, user, windowSize)
+    fun getUserMovingAverageTime(@PathVariable("user") user: String, @RequestParam("window_size") windowSize: Int): List<MovingAverageResponse> = statisticsService.userMovingAverageTime(USER, user, windowSize)
 }
